@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head th:replace="layout/layout :: head">
 <html xmlns:th="http://www.thymeleaf.org">
 <title th:text="${titulo}"></title>
 <link
@@ -11,33 +11,50 @@
 </head>
 <body>
 
-	<form th:action="@{/form}" th:object="${cliente}" th:method="post">
-		<table class="table">
-			<tr>
-				<td>Nombre</td>
-				<td><input type="text" th:field="*{nombre}" /></td>
-				<td><small class="form-text text-danger" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></small></td>
-			</tr>
-			<tr>
-				<td>Apellido</td>
-				<td><input type="text" th:field="*{apellido}" /></td>
-				<td><small class="form-text text-danger" th:if="${#fields.hasErrors('apellido')}" th:errors="*{apellido}"></small></td>
-			</tr>
-			<tr>
-				<td>Email</td>
-				<td><input type="email" th:field="*{email}" /></td>
-				<td><small class="form-text text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small></td>
-			</tr>
-			<tr>
-			<td>Fecha</td>
-				<td><input type="text" th:field="*{createdAt}" /></td>
-				<td><small class="form-text text-danger" th:if="${#fields.hasErrors('createdAt')}" th:errors="*{createdAt}"></small></td>
-			</tr>
-			<tr>
-				<td><input type="submit" value="Crear Cliente" /></td>
-			</tr>
-		</table>
-	</form>
+	<header th:replace="layout/layout :: header"></header>
+	
+	<div class="container py-4">
+	
+		<div class=" card">
+		<div class="card-header" th:text="${titulo}"></div>
+		<div class="card-body">
+			<form th:action="@{/form}" th:object="${cliente}" th:method="post">
+				<table class="table">
+					<tr>
+						<td>Nombre</td>
+						<td><input type="text" th:field="*{nombre}" /></td>
+						<td><small class="form-text text-danger"
+							th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></small></td>
+					</tr>
+					<tr>
+						<td>Apellido</td>
+						<td><input type="text" th:field="*{apellido}" /></td>
+						<td><small class="form-text text-danger"
+							th:if="${#fields.hasErrors('apellido')}" th:errors="*{apellido}"></small></td>
+					</tr>
+					<tr>
+						<td>Email</td>
+						<td><input type="email" th:field="*{email}" /></td>
+						<td><small class="form-text text-danger"
+							th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small></td>
+					</tr>
+					<tr>
+						<td>Fecha</td>
+						<td><input type="text" th:field="*{createdAt}" /></td>
+						<td><small class="form-text text-danger"
+							th:if="${#fields.hasErrors('createdAt')}"
+							th:errors="*{createdAt}"></small></td>
+					</tr>
+					<tr>
+						<td><input type="submit" value="Crear Cliente" /></td>
+					</tr>
+				</table>
+			</form>
+		</div>
+	</div>
+	</div>	
+
+	<footer th:replace="layout/layout :: footer"></footer>
 
 </body>
 

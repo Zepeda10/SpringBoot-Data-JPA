@@ -1,20 +1,14 @@
 package com.example.app.controllers;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import org.springframework.http.HttpHeaders;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
-import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.app.models.entity.Cliente;
 import com.example.app.models.service.IClienteService;
+import com.example.app.models.service.IUploadFileService;
 import com.example.app.util.paginator.PageRender;
 
 import jakarta.validation.Valid;
@@ -52,30 +47,19 @@ public class ClienteController {
 	@Autowired
 	private IClienteService clienteService;
 
-	private final Logger log = LoggerFactory.getLogger(getClass());
-	
-	private final static String UPLOADS_FOLDER = "uploads";
+	@Autowired
+	private IUploadFileService uploadFileService;
 
 	@GetMapping("/uploads/{filename:.+}") // Agregamos el filename con esa expresión regular para que tome en cuenta la
 											// extensión de la imagen
 	public ResponseEntity<Resource> verFoto(@PathVariable String filename) {
-		Path pathFoto = Paths.get(UPLOADS_FOLDER).resolve(filename).toAbsolutePath();
-		log.info("pathFoto: " + pathFoto);
-
 		Resource recurso = null;
-
 		try {
-			recurso = new UrlResource(pathFoto.toUri());
-
-			if (!recurso.exists() && !recurso.isReadable()) {
-				throw new RuntimeException("Error, no se puede cargar la imagen: " + pathFoto.toString());
-			}
-
+			recurso = uploadFileService.load(filename);
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 		return ResponseEntity.ok()
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachments; filename=\"" + recurso.getFilename() + "\"")
 				.body(recurso);
@@ -110,34 +94,23 @@ public class ClienteController {
 		}
 
 		if (!foto.isEmpty()) {
-			
-			if(cliente.getId() != null && cliente.getId() != 0 && cliente.getFoto() != null && cliente.getFoto().length() > 0) {
-				Path rootPath = Paths.get(UPLOADS_FOLDER).resolve(cliente.getFoto()).toAbsolutePath();
-				File archivo = rootPath.toFile();
-				
-				if(archivo.exists() && archivo.canRead()) {
-					archivo.delete();
-				}
+
+			if (cliente.getId() != null && cliente.getId() != 0 && cliente.getFoto() != null
+					&& cliente.getFoto().length() > 0) {
+				uploadFileService.delete(cliente.getFoto());
 			}
 
-			String uniqueFilename = UUID.randomUUID().toString() + " " + foto.getOriginalFilename(); // Agregando ID
-																										// único a cada
-																										// imagen
-			Path rootPath = Paths.get(UPLOADS_FOLDER).resolve(uniqueFilename);
-			Path rootAbsolutPath = rootPath.toAbsolutePath(); // Ruta absoluta en carpeta "uploads" de la raíz
-
-			log.info("rootPath: " + rootPath); // Muestra info del path relativo al proyecto
-			log.info("rootAbsolutPath: " + rootAbsolutPath); // Muestra info del path absoluto
-
+			String uniqueFilename = null;
 			try {
-				Files.copy(foto.getInputStream(), rootAbsolutPath); // Copiando recurso a ruta absoluta
-				flash.addFlashAttribute("info", "Has subido correctamente " + uniqueFilename + "'");
-
-				cliente.setFoto(uniqueFilename);
-
+				uniqueFilename = uploadFileService.copy(foto);
 			} catch (IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
+			flash.addFlashAttribute("info", "Has subido correctamente " + uniqueFilename + "'");
+
+			cliente.setFoto(uniqueFilename);
 		}
 
 		String mensajeFlash = (cliente.getId() != null) ? "Cliente actualizado con éxito" : "Cliente creado con éxito";
@@ -181,19 +154,14 @@ public class ClienteController {
 	@RequestMapping(value = "/eliminar/{id}")
 	public String eliminar(@PathVariable(value = "id") Long id, RedirectAttributes flash) {
 		if (id > 0) {
-			
+
 			Cliente cliente = clienteService.findOne(id);
-			
+
 			clienteService.delete(id);
 			flash.addFlashAttribute("success", "Cliente eliminado con éxito");
-			
-			Path rootPath = Paths.get(UPLOADS_FOLDER).resolve(cliente.getFoto()).toAbsolutePath();
-			File archivo = rootPath.toFile();
-			
-			if(archivo.exists() && archivo.canRead()) {
-				if(archivo.delete()) {
-					flash.addFlashAttribute("info", "Foto " + cliente.getFoto() + " eliminada con éxito.");
-				}
+
+			if (uploadFileService.delete(cliente.getFoto())) {
+				flash.addFlashAttribute("info", "Foto " + cliente.getFoto() + " eliminada con éxito.");
 			}
 		}
 

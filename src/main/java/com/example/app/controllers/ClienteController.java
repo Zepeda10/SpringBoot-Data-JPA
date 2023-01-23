@@ -5,9 +5,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +26,6 @@ import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.app.models.dao.IClienteDao;
 import com.example.app.models.entity.Cliente;
 import com.example.app.models.service.IClienteService;
 import com.example.app.util.paginator.PageRender;
@@ -44,6 +45,8 @@ public class ClienteController {
 
 	@Autowired
 	private IClienteService clienteService;
+	
+	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	@RequestMapping(value = "/listar", method = RequestMethod.GET)
 	public String listar(@RequestParam(name = "page", defaultValue = "0") int page, Model model) {
@@ -74,14 +77,19 @@ public class ClienteController {
 		}
 
 		if (!foto.isEmpty()) {
-			String rootPath = "D://Temp//uploads/"; //Guardando imágenes en ruta externa
+			
+			String uniqueFilename = UUID.randomUUID().toString() + " " + foto.getOriginalFilename(); //Agregando ID único a cada imagen
+			Path rootPath = Paths.get("uploads").resolve(uniqueFilename);
+			Path rootAbsolutPath = rootPath.toAbsolutePath(); //Ruta absoluta en carpeta "uploads" de la raíz
+			
+			log.info("rootPath: " + rootPath); //Muestra info del path relativo al proyecto
+			log.info("rootAbsolutPath: " + rootAbsolutPath); //Muestra info del path absoluto
+			
 			try {
-				byte[] bytes = foto.getBytes();
-				Path rutaCompleta = Paths.get(rootPath + "//" + foto.getOriginalFilename());
-				Files.write(rutaCompleta, bytes);
-				flash.addFlashAttribute("info", "Has subido correctamente " + foto.getOriginalFilename() + "'");
+				Files.copy(foto.getInputStream(), rootAbsolutPath); //Copiando recurso a ruta absoluta
+				flash.addFlashAttribute("info", "Has subido correctamente " + uniqueFilename + "'");
 				
-				cliente.setFoto(foto.getOriginalFilename());
+				cliente.setFoto(uniqueFilename);
 				
 			} catch (IOException e) {
 				e.printStackTrace();

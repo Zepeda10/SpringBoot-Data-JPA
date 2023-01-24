@@ -12,7 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "facturas_item")
+@Table(name = "facturas_items")
 public class ItemFactura implements Serializable {
 
 	/**

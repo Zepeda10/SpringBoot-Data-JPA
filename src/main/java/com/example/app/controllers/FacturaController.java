@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,10 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.app.models.entity.Cliente;
 import com.example.app.models.entity.Factura;
+import com.example.app.models.entity.ItemFactura;
 import com.example.app.models.entity.Producto;
 import com.example.app.models.service.IClienteService;
 
@@ -26,6 +30,8 @@ public class FacturaController {
 
 	@Autowired
 	private IClienteService clienteService;
+
+	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	@GetMapping("/form/{clienteId}")
 	public String crear(@PathVariable(value = "clienteId") Long clienteId, Map<String, Object> model,
@@ -53,8 +59,28 @@ public class FacturaController {
 
 	@PostMapping("/form")
 	public String guardar(Factura factura, @RequestParam(name = "item_id[]", required = false) Long[] itemId,
-			@RequestParam(name = "cantidad[]", required = false) Integer[] cantidad, RedirectAttributes flash) {
-		return "";
+			@RequestParam(name = "cantidad[]", required = false) Integer[] cantidad, RedirectAttributes flash,
+			SessionStatus status) {
+		
+		for (int i = 0; i < itemId.length; i++) {
+			Producto producto = clienteService.findProductoById(itemId[i]);
+			ItemFactura linea = new ItemFactura();
+
+			linea.setCantidad(cantidad[i]);
+			linea.setProducto(producto);
+			factura.addItemFactura(linea);
+
+			log.info("ID: " + itemId[i].toString() + ", cantidad: " + cantidad[i].toString());
+		}
+
+		clienteService.saveFactura(factura);
+
+		status.setComplete();
+
+		flash.addFlashAttribute("success", "Factura creada con éxito");
+
+		return "redirect:/ver/" + factura.getCliente().getId();
+		
 	}
 
 }

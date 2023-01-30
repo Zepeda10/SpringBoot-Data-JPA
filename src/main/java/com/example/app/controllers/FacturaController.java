@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +24,8 @@ import com.example.app.models.entity.Factura;
 import com.example.app.models.entity.ItemFactura;
 import com.example.app.models.entity.Producto;
 import com.example.app.models.service.IClienteService;
+
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/factura")
@@ -58,9 +62,20 @@ public class FacturaController {
 	}
 
 	@PostMapping("/form")
-	public String guardar(Factura factura, @RequestParam(name = "item_id[]", required = false) Long[] itemId,
+	public String guardar(@Valid Factura factura, BindingResult result, Model model, @RequestParam(name = "item_id[]", required = false) Long[] itemId,
 			@RequestParam(name = "cantidad[]", required = false) Integer[] cantidad, RedirectAttributes flash,
 			SessionStatus status) {
+		
+		if(result.hasErrors()) {
+			model.addAttribute("titulo","Crear factura");
+			return "factura/form";
+		}
+		
+		if(itemId == null || itemId.length == 0) {
+			model.addAttribute("titulo","Crear factura");
+			model.addAttribute("error","Error: la factura no puede NO tener líneas");
+			return "factura/form";
+		}
 		
 		for (int i = 0; i < itemId.length; i++) {
 			Producto producto = clienteService.findProductoById(itemId[i]);

@@ -28,11 +28,11 @@ public class SpringSecurityConfig {
                 .requestMatchers("/form/**").hasAnyRole("ADMIN")
                 .requestMatchers("/delete/**").hasAnyRole("ADMIN")
                 .requestMatchers("/invoice/**").hasAnyRole("ADMIN")
-                .anyRequest().authenticated();
-                //.and().formLogin()
-                //.permitAll()
-                //.and().logout()
-                //.permitAll();
+                .anyRequest().authenticated()
+                .and().formLogin()
+                .permitAll()
+                .and().logout()
+                .permitAll();
  
         return http.build();
     }

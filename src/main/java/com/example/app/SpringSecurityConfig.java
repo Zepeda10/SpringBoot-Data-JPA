@@ -29,7 +29,7 @@ public class SpringSecurityConfig {
                 .requestMatchers("/delete/**").hasAnyRole("ADMIN")
                 .requestMatchers("/invoice/**").hasAnyRole("ADMIN")
                 .anyRequest().authenticated()
-                .and().formLogin()
+                .and().formLogin().loginPage("/login")
                 .permitAll()
                 .and().logout()
                 .permitAll();

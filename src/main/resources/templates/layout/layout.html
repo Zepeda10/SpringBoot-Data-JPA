@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:fragment="head">
 <meta charset="UTF-8" />
@@ -39,6 +40,14 @@
 						<li class="nav-item"><a class="nav-link" th:href="@{/listar}">Clientes</a>
 						</li>
 					</ul>
+					<ul class="navbar-nav d-flex ms-auto">
+								<form id="logoutForm" th:action="@{/logout}" method="post">
+									<button class="btn btn-primary"
+										onclick="document.getElementById('logoutForm').submit();"
+										type="submit">Sign Out</button>
+								</form>
+					
+					</ul>
 				</div>
 			</div>
 		</nav>
@@ -57,11 +66,16 @@
 
 	<footer th:fragment="footer" class="container">
 		<p>Footer del sitio</p>
+		<p sec:authorize="isAuthenticated()">
+			Usuario logueado: <span sec:authentication="name"></span> | Roles: <span
+				sec:authentication="principal.authorities"></span>
+		</p>
 		<img th:src="@{/images/spring.png}" alt="spring logo" />
 	</footer>
 
 </body>
 <script type="text/javascript" th:src="@{/js/jquery-ui.min.js}"></script>
+
 <script
 	src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
 	integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3"
@@ -74,6 +88,10 @@
 	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
 	integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
 	crossorigin="anonymous"></script>
+
+
+
+
 
 
 </html>

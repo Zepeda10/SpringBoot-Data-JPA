@@ -19,6 +19,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -37,6 +38,7 @@ import com.example.app.models.service.IClienteService;
 import com.example.app.models.service.IUploadFileService;
 import com.example.app.util.paginator.PageRender;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @Controller
@@ -74,7 +76,7 @@ public class ClienteController {
 	}
 
 	@RequestMapping(value = {"/listar","/"}, method = RequestMethod.GET)
-	public String listar(@RequestParam(name = "page", defaultValue = "0") int page, Model model, Authentication authentication) {
+	public String listar(@RequestParam(name = "page", defaultValue = "0") int page, Model model, Authentication authentication, HttpServletRequest request) {
 		
 		if(authentication != null) {
 			logger.info("Hola usuario autenticado, tu username es: ".concat(authentication.getName()));
@@ -83,13 +85,27 @@ public class ClienteController {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
 		if(auth != null) {
-			logger.info("Utilizando forma estática, tu username es: ".concat(auth.getName()));
+			logger.info("Utilizando forma estática SecurityContextHolder, tu username es: ".concat(auth.getName()));
 		}
 		
 		if(hasRole("ROLE_ADMIN")) {
 			logger.info("Hola ".concat(auth.getName()).concat(", tienes acceso"));
 		}else {
 			logger.info("Hola ".concat(auth.getName()).concat(", no tienes acceso"));
+		}
+		
+		SecurityContextHolderAwareRequestWrapper securityContext = new SecurityContextHolderAwareRequestWrapper(request,"");
+		
+		if(securityContext.isUserInRole("ROLE_ADMIN")) {
+			logger.info("Hola usando forma SecurityContextHolderAwareRequestWrapper, ".concat(auth.getName()).concat(", tienes acceso"));
+		}else {
+			logger.info("Hola usando forma SecurityContextHolderAwareRequestWrapper,".concat(auth.getName()).concat(", no tienes acceso"));
+		}
+		
+		if(request.isUserInRole("ROLE_ADMIN")) {
+			logger.info("Hola usando forma HttpServletRequest, ".concat(auth.getName()).concat(", tienes acceso"));
+		}else {
+			logger.info("Hola usando forma HttpServletRequest,".concat(auth.getName()).concat(", no tienes acceso"));
 		}
 		
 		Pageable pageRequest = PageRequest.of(page, 5);

@@ -19,11 +19,9 @@ public class SpringSecurityConfig {
 	
 	@Autowired
 	private LoginSuccessHandler successHandler;
-
-	@Bean
-	public static BCryptPasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+	
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
 	
 	@Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -54,9 +52,9 @@ public class SpringSecurityConfig {
 
 		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
 		manager.createUser(
-				User.withUsername("hilda").password(passwordEncoder().encode("54321")).roles("USER").build());
+				User.withUsername("hilda").password(this.passwordEncoder.encode("54321")).roles("USER").build());
 		manager.createUser(
-				User.withUsername("admin").password(passwordEncoder().encode("12345")).roles("ADMIN", "USER").build());
+				User.withUsername("admin").password(this.passwordEncoder.encode("12345")).roles("ADMIN", "USER").build());
 
 		return manager;
 	}

@@ -3,6 +3,7 @@ package com.example.app;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,6 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.example.app.auth.handler.LoginSuccessHandler;
 
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 @Configuration
 public class SpringSecurityConfig {
 	
@@ -29,11 +31,11 @@ public class SpringSecurityConfig {
                 .authorizeHttpRequests()
                 .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/listar")
                 .permitAll()
-                .requestMatchers("/ver/**").hasAnyRole("USER")
-                .requestMatchers("/uploads/**").hasAnyRole("USER")
-                .requestMatchers("/form/**").hasAnyRole("ADMIN")
-                .requestMatchers("/eliminar/**").hasAnyRole("ADMIN")
-                .requestMatchers("/factura/**").hasAnyRole("ADMIN")
+               // .requestMatchers("/ver/**").hasAnyRole("USER")	// Estas autorizaciones se reemplazarán con anotaciones en el controlador
+               // .requestMatchers("/uploads/**").hasAnyRole("USER")
+               // .requestMatchers("/form/**").hasAnyRole("ADMIN")
+               // .requestMatchers("/eliminar/**").hasAnyRole("ADMIN")
+               // .requestMatchers("/factura/**").hasAnyRole("ADMIN")
                 .anyRequest().authenticated()
                 .and().formLogin()
                 .successHandler(successHandler)

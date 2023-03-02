@@ -43,6 +43,7 @@ public class MvcConfig implements WebMvcConfigurer{
 		return new BCryptPasswordEncoder();
 	}
 	
+	/*
 	@Bean
 	public LocaleResolver localeResolver() {
 	    SessionLocaleResolver localResolver = new SessionLocaleResolver();
@@ -63,6 +64,6 @@ public class MvcConfig implements WebMvcConfigurer{
 		registry.addInterceptor(localeChangeInterceptor());
 	}
 	
-	
+	*/
 
 }
